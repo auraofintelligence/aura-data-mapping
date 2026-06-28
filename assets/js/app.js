@@ -31,11 +31,19 @@ const dataTypes = [
 
 const typeLookup = Object.fromEntries(dataTypes.map((type) => [type.id, type]));
 
+const legacySeedRecords = new Set([
+  "GAJRA.Earth public field|https://GAJRA.Earth",
+  "Aura construction notes|C:\\Users\\lukec\\Downloads\\Version7 Aura of Intelligence 2023 July.pdf",
+  "Daily repo refresh|cron: 0 8 * * *",
+  "Values alignment reflection|prompt://values-alignment"
+]);
+
 const els = {
   canvasContainer: document.getElementById("canvas-container"),
   viewSelect: document.getElementById("viewSelect"),
   cameraModeBtn: document.getElementById("cameraModeBtn"),
   focusBtn: document.getElementById("focusBtn"),
+  fullscreenBtn: document.getElementById("fullscreenBtn"),
   saveBtn: document.getElementById("saveBtn"),
   layerRail: document.getElementById("layerRail"),
   activeLayerName: document.getElementById("activeLayerName"),
@@ -75,6 +83,9 @@ let clock;
 let hoverCell = null;
 let cameraMoveMode = false;
 let activeAnimation = null;
+let lastContainerWidth = 1;
+let lastContainerHeight = 1;
+let fallbackFullscreenMode = false;
 
 const auraLayers = [];
 
@@ -100,69 +111,6 @@ function parseFacetKey(key) {
 }
 
 function createSeedState() {
-  const mappings = {};
-  [
-    {
-      layerIndex: 3,
-      shell: "outside",
-      x: 4,
-      y: 5,
-      title: "GAJRA.Earth public field",
-      type: "website",
-      target: "https://GAJRA.Earth",
-      status: "seed",
-      cadence: "Live site",
-      tags: "public, earth, community",
-      notes: "Example outside/public mapping for a living website."
-    },
-    {
-      layerIndex: 5,
-      shell: "inside",
-      x: 14,
-      y: 4,
-      title: "Aura construction notes",
-      type: "document",
-      target: "C:\\Users\\lukec\\Downloads\\Version7 Aura of Intelligence 2023 July.pdf",
-      status: "seed",
-      cadence: "Reference",
-      tags: "private, source, aura",
-      notes: "Example inside/private mapping for a document source."
-    },
-    {
-      layerIndex: 0,
-      shell: "outside",
-      x: 18,
-      y: 8,
-      title: "Daily repo refresh",
-      type: "job",
-      target: "cron: 0 8 * * *",
-      status: "seed",
-      cadence: "Daily",
-      tags: "automation, refresh",
-      notes: "Example scheduled job record. Replace with the real automation when ready."
-    },
-    {
-      layerIndex: 6,
-      shell: "inside",
-      x: 8,
-      y: 2,
-      title: "Values alignment reflection",
-      type: "prompt",
-      target: "prompt://values-alignment",
-      status: "seed",
-      cadence: "On demand",
-      tags: "private, prompt",
-      notes: "Example prompt mapping for a reflective private facet."
-    }
-  ].forEach((record) => {
-    const key = facetKey(record.layerIndex, record.shell, record.x, record.y);
-    mappings[key] = {
-      id: newId(),
-      updatedAt: new Date().toISOString(),
-      ...record
-    };
-  });
-
   return {
     version: 1,
     activeLayer: 0,
@@ -170,7 +118,7 @@ function createSeedState() {
     view: "flat",
     filter: "all",
     search: "",
-    mappings
+    mappings: {}
   };
 }
 
@@ -180,15 +128,28 @@ function loadState() {
     if (!saved) return createSeedState();
     const parsed = JSON.parse(saved);
     if (!parsed || !parsed.mappings) return createSeedState();
+    const mappings = removeLegacySeeds(parsed.mappings);
+    if (parsed.selectedKey && !mappings[parsed.selectedKey]) {
+      parsed.selectedKey = null;
+    }
     return {
       ...createSeedState(),
       ...parsed,
-      mappings: parsed.mappings
+      mappings
     };
   } catch (error) {
     console.warn("Could not load Aura Data Mapping state.", error);
     return createSeedState();
   }
+}
+
+function removeLegacySeeds(mappings) {
+  return Object.fromEntries(
+    Object.entries(mappings).filter(([, record]) => {
+      const signature = `${record.title}|${record.target}`;
+      return !(record.status === "seed" && legacySeedRecords.has(signature));
+    })
+  );
 }
 
 function persistState() {
@@ -324,11 +285,12 @@ function hexToRgba(hex, alpha) {
 function initScene() {
   scene = new THREE.Scene();
   clock = new THREE.Clock();
-  camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.1, 5000);
+  const { width, height } = getCanvasSize();
+  camera = new THREE.PerspectiveCamera(62, width / height, 0.1, 5000);
   camera.position.set(0, 0, 650);
 
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(width, height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   els.canvasContainer.appendChild(renderer.domElement);
 
@@ -356,6 +318,7 @@ function initScene() {
   switchLayer(appState.activeLayer);
 
   window.addEventListener("resize", onResize);
+  document.addEventListener("fullscreenchange", updateFullscreenButton);
   renderer.domElement.addEventListener("pointerdown", onPointerDown);
   renderer.domElement.addEventListener("pointermove", onPointerMove);
   renderer.domElement.addEventListener("pointerleave", () => {
@@ -401,6 +364,7 @@ function initUI() {
   els.viewSelect.addEventListener("change", () => setView(els.viewSelect.value));
   els.cameraModeBtn.addEventListener("click", toggleCameraMode);
   els.focusBtn.addEventListener("click", refocusCamera);
+  els.fullscreenBtn.addEventListener("click", toggleFullscreen);
   els.saveBtn.addEventListener("click", () => {
     persistState();
     flashButton(els.saveBtn, "Saved");
@@ -641,6 +605,38 @@ function refocusCamera() {
   controls.update();
 }
 
+async function toggleFullscreen() {
+  try {
+    if (document.fullscreenElement || fallbackFullscreenMode) {
+      const wasNativeFullscreen = Boolean(document.fullscreenElement);
+      fallbackFullscreenMode = false;
+      document.body.classList.remove("focus-mode");
+      if (wasNativeFullscreen) {
+        await document.exitFullscreen();
+      }
+    } else {
+      await document.documentElement.requestFullscreen();
+      if (!document.fullscreenElement) {
+        fallbackFullscreenMode = true;
+        document.body.classList.add("focus-mode");
+      }
+    }
+  } catch (error) {
+    fallbackFullscreenMode = !fallbackFullscreenMode;
+    document.body.classList.toggle("focus-mode", fallbackFullscreenMode);
+  }
+  updateFullscreenButton();
+  window.setTimeout(onResize, 60);
+}
+
+function updateFullscreenButton() {
+  if (document.fullscreenElement) {
+    fallbackFullscreenMode = false;
+    document.body.classList.remove("focus-mode");
+  }
+  els.fullscreenBtn.textContent = document.fullscreenElement || fallbackFullscreenMode ? "Exit full" : "Full screen";
+}
+
 function selectedRecord() {
   return appState.selectedKey ? appState.mappings[appState.selectedKey] : null;
 }
@@ -877,9 +873,17 @@ function flashButton(button, label) {
 }
 
 function onResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  const { width, height } = getCanvasSize();
+  camera.aspect = width / height;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(width, height);
+}
+
+function getCanvasSize() {
+  const rect = els.canvasContainer.getBoundingClientRect();
+  lastContainerWidth = Math.max(1, Math.floor(rect.width || lastContainerWidth));
+  lastContainerHeight = Math.max(1, Math.floor(rect.height || lastContainerHeight));
+  return { width: lastContainerWidth, height: lastContainerHeight };
 }
 
 initUI();

@@ -12,8 +12,6 @@
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
-  <div id="canvas-container" aria-hidden="true"></div>
-
   <div class="app-shell">
     <header class="topbar">
       <div class="brand-block">
@@ -31,6 +29,7 @@
         </label>
         <button id="cameraModeBtn" class="control-btn" type="button">Move camera</button>
         <button id="focusBtn" class="control-btn" type="button">Refocus</button>
+        <button id="fullscreenBtn" class="control-btn" type="button">Full screen</button>
         <button id="saveBtn" class="control-btn strong" type="button">Save local</button>
       </div>
     </header>
@@ -58,6 +57,10 @@
           <span class="status-label">Inside / outside</span>
           <strong id="shellCount">0 / 0</strong>
         </div>
+      </section>
+
+      <section class="field-stage" aria-label="Aura matrix stage">
+        <div id="canvas-container" aria-hidden="true"></div>
       </section>
 
       <section class="legend" aria-label="Data type legend" id="legend"></section>
