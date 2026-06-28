@@ -17,9 +17,8 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="brand-block">
-        <p class="source-note">Aura Builder component study</p>
         <h1>Aura Data Mapping</h1>
-        <p>Map living websites, documents, scheduled jobs and other quick-access records onto the 12 x 24 Aura field.</p>
+        <p>12 x 24 Aura field for websites, documents, scheduled jobs and quick-access records.</p>
       </div>
 
       <div class="topbar-actions" aria-label="Aura controls">
@@ -65,7 +64,7 @@
     </main>
 
     <aside class="inspector" aria-label="Facet data inspector">
-      <div class="inspector-header">
+      <div class="inspector-header panel-section">
         <div>
           <p class="source-note">Selected facet</p>
           <h2 id="inspectorTitle">Choose a square</h2>
@@ -73,7 +72,7 @@
         <button id="openTargetBtn" class="icon-btn" type="button" disabled title="Open target">Open</button>
       </div>
 
-      <form id="mappingForm" class="mapping-form">
+      <form id="mappingForm" class="mapping-form panel-section">
         <div class="form-grid">
           <label>
             <span>Title</span>
@@ -112,7 +111,7 @@
 
           <label class="full-span">
             <span>Notes</span>
-            <textarea id="notesInput" name="notes" rows="5" placeholder="Why this belongs here, what to check, or what it opens."></textarea>
+            <textarea id="notesInput" name="notes" rows="3" placeholder="Why this belongs here, what to check, or what it opens."></textarea>
           </label>
         </div>
 
@@ -122,22 +121,27 @@
         </div>
       </form>
 
-      <div class="list-tools">
-        <label>
-          <span>Filter</span>
-          <select id="filterInput">
-            <option value="all">All types</option>
-          </select>
-        </label>
-        <label>
-          <span>Search</span>
-          <input id="searchInput" type="search" placeholder="Find mapped data">
-        </label>
+      <div class="mapped-panel panel-section">
+        <div class="section-title">
+          <span>Mapped on this layer</span>
+          <strong id="mappedListCount">0</strong>
+        </div>
+        <div class="list-tools">
+          <label>
+            <span>Filter</span>
+            <select id="filterInput">
+              <option value="all">All types</option>
+            </select>
+          </label>
+          <label>
+            <span>Search</span>
+            <input id="searchInput" type="search" placeholder="Find mapped data">
+          </label>
+        </div>
+        <div id="mappingList" class="mapping-list" aria-label="Mapped facets"></div>
       </div>
 
-      <div id="mappingList" class="mapping-list" aria-label="Mapped facets"></div>
-
-      <div class="data-actions">
+      <div class="data-actions panel-section">
         <button id="exportBtn" class="control-btn" type="button">Export JSON</button>
         <button id="importBtn" class="control-btn" type="button">Import JSON</button>
         <button id="resetLayerBtn" class="danger-btn subtle" type="button">Clear layer</button>

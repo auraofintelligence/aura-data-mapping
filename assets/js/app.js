@@ -58,6 +58,7 @@ const els = {
   filterInput: document.getElementById("filterInput"),
   searchInput: document.getElementById("searchInput"),
   mappingList: document.getElementById("mappingList"),
+  mappedListCount: document.getElementById("mappedListCount"),
   exportBtn: document.getElementById("exportBtn"),
   importBtn: document.getElementById("importBtn"),
   resetLayerBtn: document.getElementById("resetLayerBtn"),
@@ -381,7 +382,7 @@ function initUI() {
     els.legend.appendChild(legendItem);
   });
 
-  chakraData.forEach((layer, index) => {
+  [...chakraData.entries()].reverse().forEach(([index, layer]) => {
     const button = document.createElement("button");
     button.className = "layer-btn";
     button.type = "button";
@@ -764,10 +765,12 @@ function renderMappingList() {
     .sort(([, a], [, b]) => a.shell.localeCompare(b.shell) || a.y - b.y || a.x - b.x);
 
   if (!records.length) {
+    els.mappedListCount.textContent = "0";
     els.mappingList.innerHTML = '<div class="empty-state">No mapped facets on this layer yet.</div>';
     return;
   }
 
+  els.mappedListCount.textContent = String(records.length);
   els.mappingList.innerHTML = "";
   records.forEach(([key, record]) => {
     const type = typeLookup[record.type] || typeLookup.other;
