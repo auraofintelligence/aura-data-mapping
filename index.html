@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Data Mapping</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="alternate icon" href="assets/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div id="canvas-container" aria-hidden="true"></div>
+
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <p class="source-note">Aura Builder component study</p>
+        <h1>Aura Data Mapping</h1>
+        <p>Map living websites, documents, scheduled jobs and other quick-access records onto the 12 x 24 Aura field.</p>
+      </div>
+
+      <div class="topbar-actions" aria-label="Aura controls">
+        <label class="select-label">
+          <span>View</span>
+          <select id="viewSelect">
+            <option value="flat">Flat matrix</option>
+            <option value="torus">Torus field</option>
+          </select>
+        </label>
+        <button id="cameraModeBtn" class="control-btn" type="button">Move camera</button>
+        <button id="focusBtn" class="control-btn" type="button">Refocus</button>
+        <button id="saveBtn" class="control-btn strong" type="button">Save local</button>
+      </div>
+    </header>
+
+    <aside class="layer-rail" aria-label="Aura layers">
+      <div class="rail-title">Layers</div>
+      <div id="layerRail" class="layer-buttons"></div>
+    </aside>
+
+    <main class="workspace" aria-label="Aura mapping workspace">
+      <section class="field-status" aria-live="polite">
+        <div>
+          <span class="status-label">Active layer</span>
+          <strong id="activeLayerName">Root</strong>
+        </div>
+        <div>
+          <span class="status-label">Selected facet</span>
+          <strong id="selectedFacetLabel">None selected</strong>
+        </div>
+        <div>
+          <span class="status-label">Mapped facets</span>
+          <strong id="mappedCount">0</strong>
+        </div>
+        <div>
+          <span class="status-label">Inside / outside</span>
+          <strong id="shellCount">0 / 0</strong>
+        </div>
+      </section>
+
+      <section class="legend" aria-label="Data type legend" id="legend"></section>
+    </main>
+
+    <aside class="inspector" aria-label="Facet data inspector">
+      <div class="inspector-header">
+        <div>
+          <p class="source-note">Selected facet</p>
+          <h2 id="inspectorTitle">Choose a square</h2>
+        </div>
+        <button id="openTargetBtn" class="icon-btn" type="button" disabled title="Open target">Open</button>
+      </div>
+
+      <form id="mappingForm" class="mapping-form">
+        <div class="form-grid">
+          <label>
+            <span>Title</span>
+            <input id="titleInput" name="title" type="text" placeholder="Name this mapped item">
+          </label>
+
+          <label>
+            <span>Type</span>
+            <select id="typeInput" name="type"></select>
+          </label>
+
+          <label class="full-span">
+            <span>URL or local path</span>
+            <input id="targetInput" name="target" type="text" placeholder="https://... or C:\path\file.md">
+          </label>
+
+          <label>
+            <span>Status</span>
+            <select id="statusInput" name="status">
+              <option value="seed">Seed</option>
+              <option value="live">Live</option>
+              <option value="needs-review">Needs review</option>
+              <option value="archived">Archived</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Cadence</span>
+            <input id="cadenceInput" name="cadence" type="text" placeholder="Daily, monthly, on demand">
+          </label>
+
+          <label class="full-span">
+            <span>Tags</span>
+            <input id="tagsInput" name="tags" type="text" placeholder="source, public, job, docs">
+          </label>
+
+          <label class="full-span">
+            <span>Notes</span>
+            <textarea id="notesInput" name="notes" rows="5" placeholder="Why this belongs here, what to check, or what it opens."></textarea>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button id="saveMappingBtn" class="primary-btn" type="submit" disabled>Save mapping</button>
+          <button id="deleteMappingBtn" class="danger-btn" type="button" disabled>Delete mapping</button>
+        </div>
+      </form>
+
+      <div class="list-tools">
+        <label>
+          <span>Filter</span>
+          <select id="filterInput">
+            <option value="all">All types</option>
+          </select>
+        </label>
+        <label>
+          <span>Search</span>
+          <input id="searchInput" type="search" placeholder="Find mapped data">
+        </label>
+      </div>
+
+      <div id="mappingList" class="mapping-list" aria-label="Mapped facets"></div>
+
+      <div class="data-actions">
+        <button id="exportBtn" class="control-btn" type="button">Export JSON</button>
+        <button id="importBtn" class="control-btn" type="button">Import JSON</button>
+        <button id="resetLayerBtn" class="danger-btn subtle" type="button">Clear layer</button>
+        <input id="importFile" type="file" accept="application/json,.json" hidden>
+      </div>
+    </aside>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>
