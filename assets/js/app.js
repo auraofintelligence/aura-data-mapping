@@ -6,6 +6,7 @@ const ROWS = 12;
 const CELL_SIZE = 24;
 const GRID_WIDTH = COLS * CELL_SIZE;
 const GRID_HEIGHT = ROWS * CELL_SIZE;
+const FLAT_SHELL_OFFSET = GRID_HEIGHT / 2 + 26;
 const STORAGE_KEY = "auraDataMapping:v1";
 
 const chakraData = [
@@ -30,6 +31,19 @@ const dataTypes = [
 ];
 
 const typeLookup = Object.fromEntries(dataTypes.map((type) => [type.id, type]));
+const focusModes = ["both", "inside", "outside", "facet"];
+const zoomLevels = ["field", "section", "facet"];
+const focusHints = {
+  both: "See the whole inside/private and outside/public field.",
+  inside: "Focus the private/protected side. Future encryption layer.",
+  outside: "Focus the public/action-facing side. Future key and programmable action layer.",
+  facet: "Focus the selected facet."
+};
+const zoomHints = {
+  field: "Whole field distance.",
+  section: "Closer matrix section distance.",
+  facet: "Selected facet distance."
+};
 
 const legacySeedRecords = new Set([
   "GAJRA.Earth public field|https://GAJRA.Earth",
@@ -41,6 +55,8 @@ const legacySeedRecords = new Set([
 const els = {
   canvasContainer: document.getElementById("canvas-container"),
   viewSelect: document.getElementById("viewSelect"),
+  focusControls: document.getElementById("focusControls"),
+  zoomControls: document.getElementById("zoomControls"),
   cameraModeBtn: document.getElementById("cameraModeBtn"),
   focusBtn: document.getElementById("focusBtn"),
   fullscreenBtn: document.getElementById("fullscreenBtn"),
@@ -83,6 +99,7 @@ let clock;
 let hoverCell = null;
 let cameraMoveMode = false;
 let activeAnimation = null;
+let cameraAnimation = null;
 let lastContainerWidth = 1;
 let lastContainerHeight = 1;
 let fallbackFullscreenMode = false;
@@ -116,6 +133,8 @@ function createSeedState() {
     activeLayer: 0,
     selectedKey: null,
     view: "flat",
+    focusMode: "both",
+    zoomLevel: "field",
     filter: "all",
     search: "",
     mappings: {}
@@ -132,6 +151,8 @@ function loadState() {
     if (parsed.selectedKey && !mappings[parsed.selectedKey]) {
       parsed.selectedKey = null;
     }
+    if (!focusModes.includes(parsed.focusMode)) parsed.focusMode = "both";
+    if (!zoomLevels.includes(parsed.zoomLevel)) parsed.zoomLevel = "field";
     return {
       ...createSeedState(),
       ...parsed,
@@ -168,19 +189,19 @@ class AuraLayer {
 
     this.insidePlane = new THREE.Mesh(
       insideGeometry,
-      new THREE.MeshBasicMaterial({ map: createGridTexture(index, "inside"), side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ map: createGridTexture(index, "inside"), side: THREE.DoubleSide, transparent: true, opacity: 0.96 })
     );
     this.outsidePlane = new THREE.Mesh(
       outsideGeometry,
-      new THREE.MeshBasicMaterial({ map: createGridTexture(index, "outside"), side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ map: createGridTexture(index, "outside"), side: THREE.DoubleSide, transparent: true, opacity: 0.96 })
     );
 
     this.insidePlane.name = `inside_${index}`;
     this.outsidePlane.name = `outside_${index}`;
     this.insidePlane.userData = { layerIndex: index, shell: "inside" };
     this.outsidePlane.userData = { layerIndex: index, shell: "outside" };
-    this.insidePlane.position.y = GRID_HEIGHT / 2 + 26;
-    this.outsidePlane.position.y = -(GRID_HEIGHT / 2 + 26);
+    this.insidePlane.position.y = FLAT_SHELL_OFFSET;
+    this.outsidePlane.position.y = -FLAT_SHELL_OFFSET;
 
     this.initialPositions = {
       inside: this.insidePlane.geometry.attributes.position.array.slice(),
@@ -357,6 +378,17 @@ function initUI() {
     els.layerRail.appendChild(button);
   });
 
+  els.focusControls.querySelectorAll("[data-focus-mode]").forEach((button) => {
+    const mode = button.dataset.focusMode;
+    button.title = focusHints[mode] || "";
+    button.addEventListener("click", () => setFocusMode(mode));
+  });
+  els.zoomControls.querySelectorAll("[data-zoom-level]").forEach((button) => {
+    const level = button.dataset.zoomLevel;
+    button.title = zoomHints[level] || "";
+    button.addEventListener("click", () => setZoomLevel(level));
+  });
+
   els.viewSelect.value = appState.view;
   els.filterInput.value = appState.filter;
   els.searchInput.value = appState.search;
@@ -410,6 +442,7 @@ function switchLayer(index) {
   }
   persistState();
   renderAll();
+  applyNavigation(true);
 }
 
 function setView(view) {
@@ -425,6 +458,36 @@ function setView(view) {
   }
   persistState();
   renderAll();
+  applyNavigation(true);
+}
+
+function setFocusMode(mode) {
+  if (!focusModes.includes(mode)) return;
+  if (mode === "facet" && !selectedCellInfo()) {
+    flashButton(els.focusBtn, "Pick facet");
+    return;
+  }
+  const selected = selectedCellInfo();
+  if (mode !== "facet" && appState.zoomLevel === "facet" && selected?.shell !== mode) {
+    appState.zoomLevel = "section";
+  }
+  appState.focusMode = mode;
+  persistState();
+  renderAll();
+  applyNavigation();
+}
+
+function setZoomLevel(level) {
+  if (!zoomLevels.includes(level)) return;
+  if (level === "facet" && !selectedCellInfo()) {
+    flashButton(els.focusBtn, "Pick facet");
+    return;
+  }
+  appState.zoomLevel = level;
+  if (level === "facet") appState.focusMode = "facet";
+  persistState();
+  renderAll();
+  applyNavigation();
 }
 
 function formTorus(layer) {
@@ -503,6 +566,7 @@ function bendTorus(layer) {
       layer.torusPositions.outside = layer.outsidePlane.geometry.attributes.position.array.slice();
       activeAnimation = null;
       renderAll();
+      applyNavigation(true);
     }
   };
   bendLoop();
@@ -540,11 +604,154 @@ function applyTorusView(layer) {
 function applyFlatView(layer) {
   layer.insidePlane.geometry.attributes.position.copyArray(layer.initialPositions.inside);
   layer.outsidePlane.geometry.attributes.position.copyArray(layer.initialPositions.outside);
-  layer.insidePlane.position.set(0, GRID_HEIGHT / 2 + 26, 0);
-  layer.outsidePlane.position.set(0, -(GRID_HEIGHT / 2 + 26), 0);
+  layer.insidePlane.position.set(0, FLAT_SHELL_OFFSET, 0);
+  layer.outsidePlane.position.set(0, -FLAT_SHELL_OFFSET, 0);
   layer.insidePlane.geometry.attributes.position.needsUpdate = true;
   layer.outsidePlane.geometry.attributes.position.needsUpdate = true;
   layer.state = "flat";
+}
+
+function getSelectablePlanes(layer) {
+  if (appState.focusMode === "inside") return [layer.insidePlane];
+  if (appState.focusMode === "outside") return [layer.outsidePlane];
+  if (appState.focusMode === "facet") {
+    const selected = selectedCellInfo();
+    if (selected?.shell === "inside") return [layer.insidePlane];
+    if (selected?.shell === "outside") return [layer.outsidePlane];
+  }
+  return [layer.insidePlane, layer.outsidePlane];
+}
+
+function getFocusedShell() {
+  if (appState.focusMode === "inside" || appState.focusMode === "outside") {
+    return appState.focusMode;
+  }
+  const selected = selectedCellInfo();
+  if (appState.focusMode === "facet" && selected) return selected.shell;
+  return null;
+}
+
+function updateShellFocus() {
+  const focusedShell = getFocusedShell();
+  auraLayers.forEach((layer) => {
+    if (!layer) return;
+    const insideOpacity = shellOpacity("inside", focusedShell);
+    const outsideOpacity = shellOpacity("outside", focusedShell);
+    layer.insidePlane.material.opacity = insideOpacity;
+    layer.outsidePlane.material.opacity = outsideOpacity;
+    layer.insidePlane.material.transparent = true;
+    layer.outsidePlane.material.transparent = true;
+  });
+}
+
+function shellOpacity(shell, focusedShell) {
+  if (!focusedShell) return appState.view === "torus" ? 0.88 : 0.96;
+  if (shell === focusedShell) return 1;
+  return appState.view === "torus" ? 0.14 : 0.28;
+}
+
+function applyNavigation(immediate = false) {
+  if (!camera || !controls) return;
+  updateShellFocus();
+  const { position, target } = cameraGoal();
+  if (immediate) {
+    cameraAnimation = null;
+    camera.position.copy(position);
+    controls.target.copy(target);
+    controls.update();
+    return;
+  }
+  animateCameraTo(position, target);
+}
+
+function cameraGoal() {
+  const target = focusTarget();
+  const distance = zoomDistance();
+  if (appState.view === "torus") {
+    const shell = getFocusedShell();
+    const direction = shell === "inside" ? -1 : 1;
+    return {
+      target,
+      position: new THREE.Vector3(target.x, target.y, target.z + direction * distance)
+    };
+  }
+  return {
+    target,
+    position: new THREE.Vector3(target.x, target.y, target.z + distance)
+  };
+}
+
+function focusTarget() {
+  const selected = selectedCellInfo();
+  if (selected && (appState.focusMode === "facet" || appState.zoomLevel === "facet")) {
+    return appState.view === "torus" ? torusFacetTarget(selected) : flatFacetTarget(selected);
+  }
+  if (appState.view === "flat") {
+    if (appState.focusMode === "inside") return new THREE.Vector3(0, FLAT_SHELL_OFFSET, 0);
+    if (appState.focusMode === "outside") return new THREE.Vector3(0, -FLAT_SHELL_OFFSET, 0);
+  }
+  return new THREE.Vector3(0, 0, 0);
+}
+
+function flatFacetTarget(cell) {
+  const shellOffset = cell.shell === "inside" ? FLAT_SHELL_OFFSET : -FLAT_SHELL_OFFSET;
+  const x = -GRID_WIDTH / 2 + (cell.x + 0.5) * CELL_SIZE;
+  const y = shellOffset + GRID_HEIGHT / 2 - (cell.y + 0.5) * CELL_SIZE;
+  return new THREE.Vector3(x, y, 0);
+}
+
+function torusFacetTarget(cell) {
+  const localX = -GRID_WIDTH / 2 + (cell.x + 0.5) * CELL_SIZE;
+  const localY = GRID_HEIGHT / 2 - (cell.y + 0.5) * CELL_SIZE;
+  const offset = cell.shell === "inside" ? -0.5 : 0.5;
+  const tubeRadius = GRID_HEIGHT / (2 * Math.PI);
+  const torusRadius = tubeRadius;
+  const rollAngle = (localY / GRID_HEIGHT) * 2 * Math.PI;
+  const cylinderY = Math.cos(rollAngle) * (tubeRadius + offset);
+  const cylinderZ = Math.sin(rollAngle) * (tubeRadius + offset);
+  const mainAngle = (localX / GRID_WIDTH) * 2 * Math.PI;
+  const tubeAngle = Math.atan2(cylinderZ, cylinderY);
+  const radius = tubeRadius + offset;
+  return new THREE.Vector3(
+    (torusRadius + radius * Math.cos(tubeAngle)) * Math.cos(mainAngle),
+    radius * Math.sin(tubeAngle),
+    (torusRadius + radius * Math.cos(tubeAngle)) * Math.sin(mainAngle)
+  );
+}
+
+function zoomDistance() {
+  if (appState.view === "torus") {
+    if (appState.zoomLevel === "facet") return 135;
+    if (appState.zoomLevel === "section") return 280;
+    return 430;
+  }
+  if (appState.zoomLevel === "facet") return 125;
+  if (appState.zoomLevel === "section") return 360;
+  return 650;
+}
+
+function animateCameraTo(position, target) {
+  const token = {};
+  cameraAnimation = token;
+  const startPosition = camera.position.clone();
+  const startTarget = controls.target.clone();
+  const duration = 320;
+  const startedAt = performance.now();
+
+  const step = (time) => {
+    if (cameraAnimation !== token) return;
+    const progress = Math.min((time - startedAt) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    camera.position.lerpVectors(startPosition, position, eased);
+    controls.target.lerpVectors(startTarget, target, eased);
+    controls.update();
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      cameraAnimation = null;
+    }
+  };
+  requestAnimationFrame(step);
 }
 
 function getIntersectedCell(event) {
@@ -556,7 +763,7 @@ function getIntersectedCell(event) {
   mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
 
-  const intersects = raycaster.intersectObjects([layer.insidePlane, layer.outsidePlane]);
+  const intersects = raycaster.intersectObjects(getSelectablePlanes(layer));
   if (!intersects.length) return null;
   const intersect = intersects[0];
   const uv = intersect.uv;
@@ -579,6 +786,7 @@ function onPointerDown(event) {
   persistState();
   updateLayerTextures(cell.layerIndex);
   renderAll();
+  if (appState.focusMode === "facet" || appState.zoomLevel === "facet") applyNavigation();
 }
 
 function onPointerMove(event) {
@@ -600,9 +808,7 @@ function toggleCameraMode() {
 }
 
 function refocusCamera() {
-  camera.position.set(0, 0, appState.view === "torus" ? 430 : 650);
-  controls.target.set(0, 0, 0);
-  controls.update();
+  applyNavigation();
 }
 
 async function toggleFullscreen() {
@@ -646,16 +852,50 @@ function selectedCellInfo() {
 }
 
 function renderAll() {
+  normaliseNavigationState();
   renderLayerRail();
+  renderNavigationControls();
   renderStatus();
   renderForm();
   renderMappingList();
   updateLayerTextures(appState.activeLayer);
+  updateShellFocus();
+}
+
+function normaliseNavigationState() {
+  if (selectedCellInfo()) return;
+  let changed = false;
+  if (appState.focusMode === "facet") {
+    appState.focusMode = "both";
+    changed = true;
+  }
+  if (appState.zoomLevel === "facet") {
+    appState.zoomLevel = "field";
+    changed = true;
+  }
+  if (changed) persistState();
 }
 
 function renderLayerRail() {
   els.layerRail.querySelectorAll(".layer-btn").forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.layer) === appState.activeLayer);
+  });
+}
+
+function renderNavigationControls() {
+  const hasSelectedFacet = Boolean(selectedCellInfo());
+  els.canvasContainer.dataset.view = appState.view;
+  els.canvasContainer.dataset.focusMode = appState.focusMode;
+  els.canvasContainer.dataset.zoomLevel = appState.zoomLevel;
+  els.focusControls.querySelectorAll("[data-focus-mode]").forEach((button) => {
+    const mode = button.dataset.focusMode;
+    button.classList.toggle("active", mode === appState.focusMode);
+    button.disabled = mode === "facet" && !hasSelectedFacet;
+  });
+  els.zoomControls.querySelectorAll("[data-zoom-level]").forEach((button) => {
+    const level = button.dataset.zoomLevel;
+    button.classList.toggle("active", level === appState.zoomLevel);
+    button.disabled = level === "facet" && !hasSelectedFacet;
   });
 }
 
@@ -791,6 +1031,7 @@ function renderMappingList() {
       persistState();
       updateLayerTextures(appState.activeLayer);
       renderAll();
+      if (appState.focusMode === "facet" || appState.zoomLevel === "facet") applyNavigation();
     });
     els.mappingList.appendChild(button);
   });

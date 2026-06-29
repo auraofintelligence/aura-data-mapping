@@ -150,6 +150,7 @@ h2 {
 }
 
 .select-label,
+.nav-control,
 .list-tools label,
 .mapping-form label {
   display: grid;
@@ -214,6 +215,44 @@ option {
 .primary-btn {
   border-color: rgba(82, 214, 201, 0.45);
   background: rgba(82, 214, 201, 0.16);
+  color: #d9fffb;
+}
+
+.nav-control {
+  min-width: 0;
+}
+
+.segmented-control {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 34px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.segment-btn {
+  min-height: 26px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.segment-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+}
+
+.segment-btn.active {
+  background: rgba(82, 214, 201, 0.18);
   color: #d9fffb;
 }
 

@@ -27,6 +27,23 @@
             <option value="torus">Torus field</option>
           </select>
         </label>
+        <div class="nav-control" aria-label="Focus target">
+          <span>Focus</span>
+          <div class="segmented-control" id="focusControls">
+            <button class="segment-btn" data-focus-mode="both" type="button">Both</button>
+            <button class="segment-btn" data-focus-mode="inside" type="button">Inside</button>
+            <button class="segment-btn" data-focus-mode="outside" type="button">Outside</button>
+            <button class="segment-btn" data-focus-mode="facet" type="button">Facet</button>
+          </div>
+        </div>
+        <div class="nav-control" aria-label="Zoom level">
+          <span>Zoom</span>
+          <div class="segmented-control" id="zoomControls">
+            <button class="segment-btn" data-zoom-level="field" type="button">Field</button>
+            <button class="segment-btn" data-zoom-level="section" type="button">Section</button>
+            <button class="segment-btn" data-zoom-level="facet" type="button">Facet</button>
+          </div>
+        </div>
         <button id="cameraModeBtn" class="control-btn" type="button">Move camera</button>
         <button id="focusBtn" class="control-btn" type="button">Refocus</button>
         <button id="fullscreenBtn" class="control-btn" type="button">Full screen</button>
