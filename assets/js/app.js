@@ -268,15 +268,26 @@ function createGridTexture(layerIndex, shell, localHover = null) {
     context.stroke();
   }
 
-  context.fillStyle = hexToRgba("#ffffff", 0.14);
-  context.font = "800 34px Inter, Arial, sans-serif";
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.fillText(`${shell.toUpperCase()} ${shell === "inside" ? "PRIVATE" : "PUBLIC"}`, GRID_WIDTH / 2, GRID_HEIGHT / 2);
+  drawShellLabel(context, shell);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.anisotropy = renderer?.capabilities?.getMaxAnisotropy?.() || 1;
   return texture;
+}
+
+function drawShellLabel(context, shell) {
+  const label = `${shell.toUpperCase()} ${shell === "inside" ? "PRIVATE" : "PUBLIC"}`;
+  context.save();
+  context.fillStyle = hexToRgba("#ffffff", 0.14);
+  context.font = "800 34px Inter, Arial, sans-serif";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  if (appState.view === "torus" && shell === "outside") {
+    context.translate(GRID_WIDTH, 0);
+    context.scale(-1, 1);
+  }
+  context.fillText(label, GRID_WIDTH / 2, GRID_HEIGHT / 2);
+  context.restore();
 }
 
 function updateLayerTextures(layerIndex = appState.activeLayer) {
@@ -654,14 +665,21 @@ function applyNavigation(immediate = false) {
   if (!camera || !controls) return;
   updateShellFocus();
   const { position, target } = cameraGoal();
+  const orbitTarget = cameraOrbitTarget(target);
   if (immediate) {
     cameraAnimation = null;
     camera.position.copy(position);
-    controls.target.copy(target);
+    controls.target.copy(orbitTarget);
     controls.update();
+    applyCameraControlMode();
     return;
   }
-  animateCameraTo(position, target);
+  animateCameraTo(position, orbitTarget);
+}
+
+function cameraOrbitTarget(target) {
+  if (shouldLockTorusOriginPivot()) return new THREE.Vector3(0, 0, 0);
+  return target;
 }
 
 function cameraGoal() {
@@ -677,6 +695,13 @@ function cameraGoal() {
       return {
         target: interiorTarget,
         position: insideTorusCameraPosition(interiorTarget, distance, hasSurfaceTarget)
+      };
+    }
+    if (target.lengthSq() < 1) {
+      const outsideTarget = new THREE.Vector3(0, -GRID_HEIGHT * 0.06, 0);
+      return {
+        target: outsideTarget,
+        position: outsideTorusCameraPosition(distance)
       };
     }
     const direction = target.lengthSq() > 1 ? target.clone().normalize() : new THREE.Vector3(0, 0, 1);
@@ -710,6 +735,20 @@ function insideTorusCameraPosition(target, distance, hasSurfaceTarget) {
     position.setLength(18);
   }
   return position;
+}
+
+function outsideTorusCameraPosition(distance) {
+  const depth = distance >= 400
+    ? -distance * 0.76
+    : distance >= 250
+      ? -distance * 0.7
+      : -distance * 0.62;
+  const lift = distance >= 400
+    ? GRID_HEIGHT * 0.34
+    : distance >= 250
+      ? GRID_HEIGHT * 0.24
+      : GRID_HEIGHT * 0.14;
+  return new THREE.Vector3(0, lift, depth);
 }
 
 function focusTarget() {
@@ -832,10 +871,26 @@ function onPointerMove(event) {
 
 function toggleCameraMode() {
   cameraMoveMode = !cameraMoveMode;
-  controls.enablePan = cameraMoveMode;
+  applyCameraControlMode();
+}
+
+function applyCameraControlMode() {
+  if (!controls) return;
+  const lockPivot = shouldLockTorusOriginPivot();
+  controls.enablePan = cameraMoveMode && !lockPivot;
   controls.enableRotate = cameraMoveMode;
-  els.canvasContainer.querySelector("canvas").style.cursor = cameraMoveMode ? "grab" : "crosshair";
+  if (lockPivot) {
+    cameraAnimation = null;
+    controls.target.set(0, 0, 0);
+    controls.update();
+  }
+  const canvas = els.canvasContainer.querySelector("canvas");
+  if (canvas) canvas.style.cursor = cameraMoveMode ? "grab" : "crosshair";
   els.cameraModeBtn.textContent = cameraMoveMode ? "Select facets" : "Move camera";
+}
+
+function shouldLockTorusOriginPivot() {
+  return cameraMoveMode && appState.view === "torus" && getFocusedShell() === "inside";
 }
 
 function refocusCamera() {
