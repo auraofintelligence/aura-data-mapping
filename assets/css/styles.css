@@ -46,6 +46,37 @@ body.focus-mode .legend {
   border-radius: 0;
 }
 
+body.focus-mode .inspector {
+  grid-template-rows: auto auto minmax(128px, 1fr) auto;
+  gap: 6px;
+  padding: 8px;
+}
+
+body.focus-mode .panel-section {
+  padding: 7px;
+}
+
+body.focus-mode .mapping-form,
+body.focus-mode .form-grid,
+body.focus-mode .mapped-panel {
+  gap: 6px;
+}
+
+body.focus-mode select,
+body.focus-mode input {
+  min-height: 30px;
+  padding-block: 5px;
+}
+
+body.focus-mode textarea {
+  min-height: 44px;
+  max-height: 50px;
+}
+
+body.focus-mode .data-actions {
+  flex-wrap: nowrap;
+}
+
 button,
 input,
 select,
@@ -503,7 +534,7 @@ option {
   align-content: start;
   gap: 7px;
   min-height: 0;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .mapping-card {

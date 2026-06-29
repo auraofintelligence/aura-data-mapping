@@ -669,16 +669,47 @@ function cameraGoal() {
   const distance = zoomDistance();
   if (appState.view === "torus") {
     const shell = getFocusedShell();
-    const direction = shell === "inside" ? -1 : 1;
+    if (shell === "inside") {
+      const hasSurfaceTarget = target.lengthSq() >= 1;
+      const interiorTarget = hasSurfaceTarget
+        ? target
+        : new THREE.Vector3(0, 0, -GRID_HEIGHT * 0.42);
+      return {
+        target: interiorTarget,
+        position: insideTorusCameraPosition(interiorTarget, distance, hasSurfaceTarget)
+      };
+    }
+    const direction = target.lengthSq() > 1 ? target.clone().normalize() : new THREE.Vector3(0, 0, 1);
     return {
       target,
-      position: new THREE.Vector3(target.x, target.y, target.z + direction * distance)
+      position: target.clone().add(direction.multiplyScalar(distance))
     };
   }
   return {
     target,
     position: new THREE.Vector3(target.x, target.y, target.z + distance)
   };
+}
+
+function insideTorusCameraPosition(target, distance, hasSurfaceTarget) {
+  if (!hasSurfaceTarget) {
+    const z = distance >= 400
+      ? GRID_HEIGHT * 0.28
+      : distance >= 250
+        ? GRID_HEIGHT * 0.13
+        : -GRID_HEIGHT * 0.06;
+    return new THREE.Vector3(0, 0, z);
+  }
+  const scale = distance >= 400
+    ? 0.02
+    : distance >= 250
+      ? 0.1
+      : 0.32;
+  const position = target.clone().multiplyScalar(scale);
+  if (position.length() < 18) {
+    position.setLength(18);
+  }
+  return position;
 }
 
 function focusTarget() {
