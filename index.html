@@ -89,7 +89,11 @@
           <p class="source-note">Selected facet</p>
           <h2 id="inspectorTitle">Choose a square</h2>
         </div>
-        <button id="openTargetBtn" class="icon-btn" type="button" disabled title="Open target">Open</button>
+        <div class="inspector-actions" aria-label="Selected facet actions">
+          <button id="saveMappingBtn" class="primary-btn" type="submit" form="mappingForm" disabled title="Save mapping">Save</button>
+          <button id="deleteMappingBtn" class="danger-btn" type="button" disabled title="Delete mapping">Delete</button>
+          <button id="openTargetBtn" class="icon-btn" type="button" disabled title="Open target">Open</button>
+        </div>
       </div>
 
       <form id="mappingForm" class="mapping-form panel-section">
@@ -133,11 +137,6 @@
             <span>Notes</span>
             <textarea id="notesInput" name="notes" rows="3" placeholder="Why this belongs here, what to check, or what it opens."></textarea>
           </label>
-        </div>
-
-        <div class="form-actions">
-          <button id="saveMappingBtn" class="primary-btn" type="submit" disabled>Save mapping</button>
-          <button id="deleteMappingBtn" class="danger-btn" type="button" disabled>Delete mapping</button>
         </div>
       </form>
 

@@ -47,7 +47,6 @@ body.focus-mode .legend {
 }
 
 body.focus-mode .inspector {
-  grid-template-rows: auto auto minmax(128px, 1fr) auto;
   gap: 6px;
   padding: 8px;
 }
@@ -73,8 +72,9 @@ body.focus-mode textarea {
   max-height: 50px;
 }
 
+body.focus-mode .inspector-actions,
 body.focus-mode .data-actions {
-  flex-wrap: nowrap;
+  gap: 6px;
 }
 
 button,
@@ -436,8 +436,8 @@ option {
   grid-column: 3;
   grid-row: 2;
   align-self: stretch;
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
   overflow: hidden;
   gap: 8px;
@@ -459,11 +459,34 @@ option {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  align-items: start;
+  align-items: center;
+}
+
+.inspector-header > div {
+  min-width: 0;
+}
+
+.inspector-header h2 {
+  overflow-wrap: anywhere;
+}
+
+.inspector-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.inspector-actions .primary-btn,
+.inspector-actions .danger-btn,
+.inspector-actions .icon-btn {
+  min-width: 54px;
+  padding-inline: 9px;
 }
 
 .icon-btn {
-  min-width: 62px;
+  min-width: 54px;
 }
 
 .mapping-form {
@@ -482,7 +505,6 @@ option {
   grid-column: 1 / -1;
 }
 
-.form-actions,
 .data-actions {
   display: flex;
   gap: 7px;
@@ -490,10 +512,12 @@ option {
 }
 
 .data-actions {
+  flex: 0 0 auto;
   align-content: start;
 }
 
 .mapped-panel {
+  flex: 1 1 auto;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
   gap: 8px;

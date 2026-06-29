@@ -739,15 +739,15 @@ function insideTorusCameraPosition(target, distance, hasSurfaceTarget) {
 
 function outsideTorusCameraPosition(distance) {
   const depth = distance >= 400
-    ? -distance * 0.76
+    ? -GRID_HEIGHT * 0.43
     : distance >= 250
-      ? -distance * 0.7
-      : -distance * 0.62;
+      ? -GRID_HEIGHT * 0.36
+      : -GRID_HEIGHT * 0.3;
   const lift = distance >= 400
-    ? GRID_HEIGHT * 0.34
+    ? GRID_HEIGHT * 0.18
     : distance >= 250
-      ? GRID_HEIGHT * 0.24
-      : GRID_HEIGHT * 0.14;
+      ? GRID_HEIGHT * 0.14
+      : GRID_HEIGHT * 0.1;
   return new THREE.Vector3(0, lift, depth);
 }
 
