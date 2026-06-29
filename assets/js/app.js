@@ -66,7 +66,6 @@ const els = {
   selectedFacetLabel: document.getElementById("selectedFacetLabel"),
   mappedCount: document.getElementById("mappedCount"),
   shellCount: document.getElementById("shellCount"),
-  legend: document.getElementById("legend"),
   inspectorTitle: document.getElementById("inspectorTitle"),
   openTargetBtn: document.getElementById("openTargetBtn"),
   mappingForm: document.getElementById("mappingForm"),
@@ -370,11 +369,6 @@ function initUI() {
     const typeOption = new Option(type.label, type.id);
     els.typeInput.add(typeOption);
     els.filterInput.add(new Option(type.label, type.id));
-
-    const legendItem = document.createElement("div");
-    legendItem.className = "legend-item";
-    legendItem.innerHTML = `<span class="legend-swatch" style="--item-color:${type.color}"></span>${type.label}`;
-    els.legend.appendChild(legendItem);
   });
 
   [...chakraData.entries()].reverse().forEach(([index, layer]) => {
@@ -739,15 +733,15 @@ function insideTorusCameraPosition(target, distance, hasSurfaceTarget) {
 
 function outsideTorusCameraPosition(distance) {
   const depth = distance >= 400
-    ? -GRID_HEIGHT * 0.43
+    ? -GRID_HEIGHT * 0.72
     : distance >= 250
-      ? -GRID_HEIGHT * 0.36
-      : -GRID_HEIGHT * 0.3;
+      ? -GRID_HEIGHT * 0.61
+      : -GRID_HEIGHT * 0.48;
   const lift = distance >= 400
-    ? GRID_HEIGHT * 0.18
+    ? GRID_HEIGHT * 0.24
     : distance >= 250
-      ? GRID_HEIGHT * 0.14
-      : GRID_HEIGHT * 0.1;
+      ? GRID_HEIGHT * 0.19
+      : GRID_HEIGHT * 0.15;
   return new THREE.Vector3(0, lift, depth);
 }
 
@@ -1099,6 +1093,7 @@ function renderMappingList() {
     const button = document.createElement("button");
     button.className = "mapping-card";
     button.type = "button";
+    button.title = record.target || record.notes || record.tags || record.title;
     button.style.setProperty("--item-color", type.color);
     button.classList.toggle("active", key === appState.selectedKey);
     button.innerHTML = `
