@@ -315,6 +315,12 @@ option {
   background: rgba(255, 255, 255, 0.06);
 }
 
+.danger-btn.armed {
+  border-color: rgba(251, 113, 133, 0.78);
+  background: rgba(251, 113, 133, 0.28);
+  color: #fff1f3;
+}
+
 .layer-rail {
   grid-row: 2 / 4;
   display: flex;
@@ -445,12 +451,20 @@ option {
   overflow-wrap: anywhere;
 }
 
+.inspector-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
 .mapping-actions {
   display: flex;
   flex: 0 0 auto;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  gap: 7px;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
 }
 
 .mapping-actions .primary-btn,

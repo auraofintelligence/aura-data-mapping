@@ -85,6 +85,7 @@ const els = {
   exportBtn: document.getElementById("exportBtn"),
   importBtn: document.getElementById("importBtn"),
   resetLayerBtn: document.getElementById("resetLayerBtn"),
+  clearAuraBtn: document.getElementById("clearAuraBtn"),
   importFile: document.getElementById("importFile")
 };
 
@@ -102,6 +103,8 @@ let cameraAnimation = null;
 let lastContainerWidth = 1;
 let lastContainerHeight = 1;
 let fallbackFullscreenMode = false;
+let armedClearAction = null;
+let clearArmTimer = null;
 
 const auraLayers = [];
 
@@ -422,12 +425,14 @@ function initUI() {
   els.exportBtn.addEventListener("click", exportMappings);
   els.importBtn.addEventListener("click", () => els.importFile.click());
   els.importFile.addEventListener("change", importMappings);
-  els.resetLayerBtn.addEventListener("click", clearActiveLayer);
+  els.resetLayerBtn.addEventListener("click", requestClearActiveLayer);
+  els.clearAuraBtn.addEventListener("click", requestClearAura);
 
   renderAll();
 }
 
 function switchLayer(index) {
+  resetClearArm();
   appState.activeLayer = index;
   if (appState.selectedKey && parseFacetKey(appState.selectedKey).layerIndex !== index) {
     appState.selectedKey = null;
@@ -994,6 +999,8 @@ function renderStatus() {
   els.selectedFacetLabel.textContent = selected
     ? `${chakraData[selected.layerIndex].name} ${selected.shell} ${selected.x + 1}, ${selected.y + 1}`
     : "None selected";
+  els.resetLayerBtn.disabled = activeRecords.length === 0;
+  els.clearAuraBtn.disabled = records.length === 0;
 }
 
 function renderForm() {
@@ -1169,21 +1176,72 @@ function importMappings(event) {
   reader.readAsText(file);
 }
 
+function requestClearActiveLayer() {
+  const hasRecords = Object.values(appState.mappings).some((record) => record.layerIndex === appState.activeLayer);
+  if (!hasRecords) {
+    flashButton(els.resetLayerBtn, "Layer empty");
+    return;
+  }
+  armClearAction("layer", els.resetLayerBtn, "Confirm layer", clearActiveLayer);
+}
+
+function requestClearAura() {
+  if (!Object.keys(appState.mappings).length) {
+    flashButton(els.clearAuraBtn, "Aura empty");
+    return;
+  }
+  armClearAction("aura", els.clearAuraBtn, "Confirm aura", clearAura);
+}
+
+function armClearAction(action, button, confirmLabel, onConfirm) {
+  if (armedClearAction === action) {
+    resetClearArm();
+    onConfirm();
+    return;
+  }
+  resetClearArm();
+  armedClearAction = action;
+  button.textContent = confirmLabel;
+  button.classList.add("armed");
+  clearArmTimer = window.setTimeout(resetClearArm, 3600);
+}
+
+function resetClearArm() {
+  if (clearArmTimer) window.clearTimeout(clearArmTimer);
+  clearArmTimer = null;
+  armedClearAction = null;
+  els.resetLayerBtn.textContent = "Clear layer";
+  els.clearAuraBtn.textContent = "Clear aura";
+  els.resetLayerBtn.classList.remove("armed");
+  els.clearAuraBtn.classList.remove("armed");
+}
+
 function clearActiveLayer() {
-  const layerName = chakraData[appState.activeLayer].name;
-  const ok = confirm(`Clear all mapped facets from the ${layerName} layer?`);
-  if (!ok) return;
+  const layerIndex = appState.activeLayer;
   Object.keys(appState.mappings).forEach((key) => {
-    if (appState.mappings[key].layerIndex === appState.activeLayer) {
+    if (appState.mappings[key].layerIndex === layerIndex) {
       delete appState.mappings[key];
     }
   });
   if (appState.selectedKey) {
     const selected = parseFacetKey(appState.selectedKey);
-    if (selected.layerIndex === appState.activeLayer) appState.selectedKey = null;
+    if (selected.layerIndex === layerIndex) appState.selectedKey = null;
   }
   persistState();
+  updateLayerTextures(layerIndex);
   renderAll();
+  flashButton(els.resetLayerBtn, "Layer cleared");
+}
+
+function clearAura() {
+  appState.mappings = {};
+  appState.selectedKey = null;
+  persistState();
+  auraLayers.forEach((layer, index) => {
+    if (layer) updateLayerTextures(index);
+  });
+  renderAll();
+  flashButton(els.clearAuraBtn, "Aura cleared");
 }
 
 function flashButton(button, label) {

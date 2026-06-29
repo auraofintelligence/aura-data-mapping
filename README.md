@@ -6,6 +6,10 @@ The original builder let a person click a 12 x 24 matrix facet and turn it into 
 
 That record can point to a living website, document, scheduled job, repository, dataset, prompt, contact or other quick-access item.
 
+## Public page
+
+https://auraofintelligence.github.io/aura-data-mapping/
+
 ## Run locally
 
 From this folder:
@@ -32,6 +36,10 @@ http://localhost:8080
 
 ## Source notes
 
-This repo is derived from `auraofintelligence/aura-components`, which is GPL-3.0 licensed.
+This repo is derived from the Aura Builder component in `auraofintelligence/aura-components` and has been republished as a standalone Aura Data Mapping prototype.
 
 The supplied Aura of Intelligence PDF supports the key design anchors used here: a 12 x 24 matrix for linking objects, seven chakra-coloured layers, and the inside/private plus outside/public shell distinction.
+
+## Licence
+
+Public non-commercial learning, reference, study and adaptation are welcome with attribution. Commercial use is reserved to Luke Hayes / Aura of Intelligence and requires written permission. See [LICENSE](LICENSE).

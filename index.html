@@ -85,6 +85,11 @@
           <p class="source-note">Selected facet</p>
           <h2 id="inspectorTitle">Choose a square</h2>
         </div>
+        <div class="mapping-actions" aria-label="Selected facet actions">
+          <button id="saveMappingBtn" class="primary-btn" type="submit" form="mappingForm" disabled title="Save mapping">Save</button>
+          <button id="deleteMappingBtn" class="danger-btn" type="button" disabled title="Delete mapping">Delete</button>
+          <button id="openTargetBtn" class="icon-btn" type="button" disabled title="Open target">Open</button>
+        </div>
       </div>
 
       <form id="mappingForm" class="mapping-form panel-section">
@@ -131,12 +136,6 @@
         </div>
       </form>
 
-      <div class="mapping-actions panel-section" aria-label="Selected facet actions">
-        <button id="saveMappingBtn" class="primary-btn" type="submit" form="mappingForm" disabled title="Save mapping">Save</button>
-        <button id="deleteMappingBtn" class="danger-btn" type="button" disabled title="Delete mapping">Delete</button>
-        <button id="openTargetBtn" class="icon-btn" type="button" disabled title="Open target">Open</button>
-      </div>
-
       <div class="inspector-utility panel-section">
         <div class="list-tools">
           <label>
@@ -156,6 +155,7 @@
           <button id="exportBtn" class="control-btn" type="button">Export JSON</button>
           <button id="importBtn" class="control-btn" type="button">Import JSON</button>
           <button id="resetLayerBtn" class="danger-btn subtle" type="button">Clear layer</button>
+          <button id="clearAuraBtn" class="danger-btn subtle" type="button">Clear aura</button>
           <input id="importFile" type="file" accept="application/json,.json" hidden>
         </div>
       </div>
