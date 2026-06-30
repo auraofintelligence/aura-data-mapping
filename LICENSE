@@ -1,80 +1,65 @@
-# Aura Data Mapping Public Stewardship Licence
+# Strange But True Public Source Licence
 
-Copyright (c) Luke Hayes / Aura of Intelligence. All rights reserved except as allowed below.
+Copyright (c) 2026 Luke Nathan Hayes / Strange But True / Aura of Intelligence.
+All rights reserved except as allowed below.
 
-This is a plain-language stewardship licence for the Aura Data Mapping public website and source repo. It is written for an exploratory data-mapping interface, not as a generic software product licence.
+This is a plain-language licence for aura-data-mapping.
 
-## 1. What This Repo Is
+This is not an open-source licence. It is a public source licence: people can read, learn from and use the work personally, but commercial and corporate rights stay with Luke Nathan Hayes.
 
-This repository contains Aura Data Mapping, a standalone public version of the Aura Builder idea where facets in a 12 x 24 Aura field can hold quick-access data records.
+## 1. What You Can Do
 
-The app includes the seven Aura layers, inside/private and outside/public shells, flat and horn-torus navigation, local browser storage, JSON import/export, interface code, labels, visual design, and related documentation.
+You may view, share, clone, study, reference and adapt this repo for personal, educational, artistic, research, community or other non-commercial use.
 
-Nothing in this repo should be treated as a finished security, privacy, encryption, scheduling, data-governance, crypto, legal, financial, medical or production infrastructure product unless Luke Hayes explicitly says so.
+You may use a personal AI assistant to help read, explain or adapt the repo for those allowed non-commercial uses.
 
-## 2. Non-Commercial Public Use
+If you use or adapt the work, give clear credit:
 
-You may view, share links to, clone, study, reference and adapt this repo for personal, community, educational, artistic, research, public-interest or other non-commercial purposes.
+Based on aura-data-mapping by Luke Nathan Hayes / Strange But True / Aura of Intelligence.
+Original project: https://github.com/auraofintelligence/aura-data-mapping
+Used under the Strange But True Public Source Licence.
 
-This includes learning from the Aura field navigation pattern, adapting the interface structure for your own non-commercial mapping work, and using the repo as inspiration for public-interest data access tools.
+## 2. What You Cannot Do Without Permission
 
-When practical, please credit Aura of Intelligence and Luke Hayes, and link back to the original project:
+You may not use this repo, its code, ideas, text, designs, workflows, data structures, assets, names or close derivatives for commercial, corporate, institutional, government, startup, agency, client or employer purposes without written permission from Luke Nathan Hayes.
 
-https://auraofintelligence.github.io/aura-data-mapping/
+That means you may not:
 
-## 3. Commercial Rights Reserved
+- sell, monetise, repackage, licence, sponsor, advertise with or commercially distribute the work;
+- use it in paid products, SaaS tools, client work, consulting, courses, workshops, dashboards, templates or commercial infrastructure;
+- use it inside a company, agency, startup, institution, government body or funded commercial project;
+- use it for commercial AI training, datasets, embeddings, knowledge bases, agents, model products or evaluation systems;
+- remove attribution or present the work as your own;
+- use Strange But True, Aura of Intelligence, Luke Nathan Hayes, project names, screenshots, music, writing, images or brand material to imply endorsement, partnership or approval.
 
-All commercial rights are reserved to Luke Hayes / Aura of Intelligence.
+## 3. Commercial Rights
 
-You may not sell, monetise, repackage, licence, sponsor, advertise with, merchandise, commercially publish, commercially distribute, commercially train systems on, or commercially exploit Aura Data Mapping without written permission.
+All commercial rights are reserved to Luke Nathan Hayes.
 
-This includes, but is not limited to:
+Commercial use requires written permission from Luke Nathan Hayes. Permission can be granted, denied, limited, priced or handled under a separate agreement.
 
-- the Aura Data Mapping name, interface, field model and horn-torus mapping workflow
-- the Aura of Intelligence name, brand, visual language and related narrative materials
-- paid dashboards, commercial templates, SaaS products, client services, courses, data products, crypto actions, programmable agents or commercial infrastructure derived from this repo
-- screenshots, generated assets, page copy, builder workflows, data models, docs, demos or close copies of the interface
+## 4. Your Own Outputs
 
-Commercial use requires written permission from Luke Hayes.
+If this repo lets you create your own notes, Markdown files, exports, maps, profiles, plans or other personal outputs, those outputs belong to you.
 
-## 4. User Data And Local Outputs
+You are responsible for what you put into the tool, what you export, and where you share it.
 
-The app currently stores mapping data in your own browser localStorage and can export JSON files.
+## 5. Third-Party Material
 
-Aura Data Mapping claims no ownership over mapping records that you create for yourself. You are responsible for what you put into the map, what you export, and where you share it.
+This licence only covers original material created by Luke Nathan Hayes / Strange But True / Aura of Intelligence.
 
-Do not use this public prototype to store secrets, private keys, medical records, legal records, passwords, production credentials or other sensitive material.
+Third-party libraries, fonts, APIs, platforms, services or embedded material keep their own licences.
 
-## 5. Code, Forms And Mapping Structures
-
-The code, interface forms and mapping structures are shared so people can learn from the approach and adapt it for non-commercial creative, educational, research or public-interest work.
-
-If you improve the public infrastructure, fix bugs, or develop useful patterns from it, please share useful notes, fixes or improvements back to the commons where reasonable.
-
-Do not sell this repo, its templates, its builder system, or close copies of its planning or mapping infrastructure as a standalone product.
-
-## 6. Honest Provenance
-
-If you adapt non-commercial parts of this repo, keep the provenance clear.
-
-Do not remove attribution in a way that makes the work look like it originated elsewhere. Do not use the Aura of Intelligence name, logo, language, screenshots or planning material to imply endorsement, partnership, sponsorship or approval without written permission.
-
-## 7. Harmful Or Deceptive Use
+## 6. No Harmful Or Misleading Use
 
 You may not use this repo or its material for deceptive, exploitative, aggressive, hateful, harassing, unsafe or harmful purposes.
 
-You may not use the material to mislead people about privacy, security, encryption, law, finance, health, public events, public safety, programmable actions, crypto systems or current events.
+You may not use it to mislead people about privacy, security, law, finance, health, public safety, governance, crypto, AI capability or current events.
 
-## 8. Upstream And Third-Party Material
-
-This repo was created as a new public Aura Data Mapping build informed by the earlier Aura Builder component. Any third-party libraries, browser APIs, fonts or externally hosted packages keep their own licences.
-
-This licence does not remove any rights that third-party authors already grant under their own licences.
-
-## 9. No Warranty
+## 7. No Warranty
 
 This repo is provided as-is.
 
-Luke Hayes and Aura of Intelligence make no warranties and accept no liability for how you choose to use, adapt, interpret, deploy or rely on this material.
+Luke Nathan Hayes / Strange But True / Aura of Intelligence make no warranties and accept no liability for how you use, adapt, interpret, deploy or rely on this material.
 
-Build wisely, keep provenance clear, and do not treat the prototype as the finished privacy-preserving system.
+Public prototypes are not finished legal, medical, financial, privacy, security, public-safety, governance, crypto, AI-governance or production infrastructure unless Luke Nathan Hayes explicitly says so in writing.
